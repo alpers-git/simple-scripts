@@ -7,6 +7,21 @@ from bibtexparser.bwriter import BibTexWriter
 # Import unidecode module from unidecode
 from unidecode import unidecode
 
+month_ranks = {
+    'jan': 1,
+    'feb': 2,
+    'mar': 3,
+    'apr': 4,
+    'may': 5,
+    'jun': 6,
+    'jul': 7,
+    'aug': 8,
+    'sep': 9,
+    'oct': 10,
+    'nov': 11,
+    'dec': 12
+}
+
 file_name = sys.argv[1]
 
 #process author
@@ -46,8 +61,8 @@ def process_title(title):
 #open the bibtex file and read the lines
 with open(file_name) as bibtex_file:
    bibtex_database = bibtexparser.load(bibtex_file)
-
-   bibtex_database.entries.sort(key=lambda x: x['year'], reverse=True)
+   #sort entries by first year and then month and then auhors name. year and month is descending order and author name is ascending order. Use the month_ranks dictionary to convert month to a number
+   bibtex_database.entries.sort(key=lambda x: (x['year'], month_ranks[x['month'].lower()], x['author']), reverse=True)
 
    #create the html file
    html_file_name = file_name[:-4] + ".html"
@@ -55,7 +70,7 @@ with open(file_name) as bibtex_file:
 
    #Create detailed looks into latest three papers
    counter = 0
-   for entry in bibtex_database.entries[0:3]:
+   for entry in bibtex_database.entries:
         html_file.write("""<ul>
     <li class="row" id="extra-info-text">
         <div class="col s12 l12">
@@ -65,7 +80,7 @@ with open(file_name) as bibtex_file:
             #go over all the authors and add them to the html file if author name is 'Alper Sahistan' make it bold
             #make shorten first names to initials and add a period
         for author in entry['author'].split(' and '):
-            if author == 'Sahistan Alper':
+            if author == 'Sahistan, Alper':
                 html_file.write("<b>" + process_author_name(author) + "</b>")
             else:
                 html_file.write(unidecode(process_author_name(author)))
@@ -81,7 +96,7 @@ with open(file_name) as bibtex_file:
         html_file.write('<a class=" modal-trigger" href="#modal' + str(counter) + '"><i class="icon-light" style="font-family: Source Code Pro">BibTeX</i></a></p>')
         html_file.write("""\n\t\t</li>\n</ul>\n""")
 
-        html_file.write('<!-- Modals -->\n')
+        html_file.write('<!-- Modal -->\n')
         html_file.write('<div id="modal' + str(counter) + '" class="modal">\n')
         html_file.write("""\t <div class="modal-content" id="citation-box">\n
         \t\t<h4>BibTeX citation</h4>\n
@@ -90,7 +105,7 @@ with open(file_name) as bibtex_file:
         writer = BibTexWriter()
         writer.contents = ['entries']
         writer.indent = '  '
-        writer.order_entries_by = ('year', 'author')
+        writer.order_entries_by = ('year', 'month', 'author')
         #give first element of the bibtext entry to the writer
         bibtex_str = bibtexparser.dumps(bibtex_database, writer)
         bibtex_str = bibtex_str.split('@')[4-counter]
