@@ -70,7 +70,7 @@ with open(file_name) as bibtex_file:
 
    #Create detailed looks into latest three papers
    counter = 0
-   for entry in bibtex_database.entries:
+   for entry in bibtex_database.entries[0:3]:
         html_file.write("""<ul>
     <li class="row" id="extra-info-text">
         <div class="col s12 l12">
