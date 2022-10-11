@@ -64,6 +64,14 @@ with open(file_name) as bibtex_file:
    #sort entries by first year and then month and then auhors name. year and month is descending order and author name is ascending order. Use the month_ranks dictionary to convert month to a number
    bibtex_database.entries.sort(key=lambda x: (x['year'], month_ranks[x['month'].lower()], x['author']), reverse=True)
 
+   writer = BibTexWriter()
+   writer.contents = ['entries']
+   writer.indent = '  '
+   writer.order_entries_by = ('year', 'month', 'author')
+   #give first element of the bibtext entry to the writer
+   bibtex_str = bibtexparser.dumps(bibtex_database, writer)
+   bibtex_list = bibtex_str.split('@')
+
    #create the html file
    html_file_name = file_name[:-4] + ".html"
    html_file = open(html_file_name, 'w')
@@ -102,13 +110,8 @@ with open(file_name) as bibtex_file:
         \t\t<h4>BibTeX citation</h4>\n
         \t\t\t<div class="card-panel" id ="citation-text">\n
         \t\t\t\t<p type="text" id="paper"""+ str(counter) + '">')
-        writer = BibTexWriter()
-        writer.contents = ['entries']
-        writer.indent = '  '
-        writer.order_entries_by = ('year', 'month', 'author')
-        #give first element of the bibtext entry to the writer
-        bibtex_str = bibtexparser.dumps(bibtex_database, writer)
-        bibtex_str = bibtex_str.split('@')[4-counter]
+        
+        bibtex_str = bibtex_list[4-counter]
         html_file.write("@" + bibtex_str)
         html_file.write("""</p>
         </div>
