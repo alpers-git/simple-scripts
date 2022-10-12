@@ -67,10 +67,11 @@ def process_author_name(author):
 
 #process title
 #a function that takes title, puts it in double quotes and removes curly brackets
-def process_title(title):
+def process_title(title, quotes=True):
     title = title.replace('{', '')
     title = title.replace('}', '')
-    title = '"' + title + '"'
+    if quotes:
+        title = '"' + title + '"'
     return title
 def generate_teaser(size, html_file, bibtex_database):
     counter = 0
@@ -94,7 +95,7 @@ def generate_teaser(size, html_file, bibtex_database):
                 else:
                     html_file.write(" \n\t\t\t\t\t\t")
 
-            html_file.write(process_title(entry['title']) + " \n\t\t\t\t\t\t")
+            html_file.write(process_title(entry['title'], True) + " \n\t\t\t\t\t\t")
             html_file.write("<b>" + entry['booktitle'] + "</b>\n")
             html_file.write('<a href= + LINK HERE> <i class="material-icons icon-light">picture_as_pdf</i></a>')
             html_file.write('<a class=" modal-trigger" href="#modal' + str(counter) + '"><i class="icon-light" style="font-family: Source Code Pro">BibTeX</i></a></p>')
@@ -128,6 +129,7 @@ def generate_pubs(html_file, bibtex_database):
     html_file.write("""<div class="col s12 m12">
         \t<h2>"""+ str(current_year) +"""</h2>
         \t<hr>\n""")
+    counter = 0
     #go over all the publications from bibtex_database
     for entry in bibtex_database.entries:
         #if the year of the publication is the same as the current year
@@ -149,7 +151,7 @@ def generate_pubs(html_file, bibtex_database):
         \t\t\t\t\t\t\t</div>
         \t\t\t\t\t\t</div>\n""")
         html_file.write("""\t\t\t\t\t\t<span class="card-title">""" 
-        +process_title(entry['title'])+"""</span>
+        +process_title(entry['title'], False)+"""</span>
         \t\t\t\t\t\t<p><i>"""+ entry['booktitle'] +"""</i></p>\n""")
         html_file.write("""\t\t\t\t\t\t<p>Authors: """)
         #go over all the authors and add them to the html file if author name is 'Alper Sahistan' make it bold
@@ -163,6 +165,36 @@ def generate_pubs(html_file, bibtex_database):
                     html_file.write(", ")
                 else:
                     html_file.write("</p>\n")
+        html_file.write("""\t\t\t\t\t</div>
+        \t\t\t\t\t<div class="card-action">
+        \t\t\t\t\t\t<a href= + LINK HERE> <i class="material-icons icon-light">picture_as_pdf</i></a>
+        \t\t\t\t\t\t<a class=" modal-trigger" href="#modal"""+ str(counter) + """"><i class="icon-light" style="font-family: Source Code Pro; text-transform: none">BibTeX</i></a>
+        \t\t\t\t\t</div>
+        \t\t\t\t</div>
+        \t\t\t</div>
+        \t\t</div>\n""")
+        html_file.write('\t\t<!-- Modal -->\n')
+        html_file.write('\t\t<div id="modal' + str(counter) + '" class="modal">\n')
+        html_file.write("""\t\t\t <div class="modal-content" id="citation-box">
+        \t\t\t\t<h4>BibTeX citation</h4>
+        \t\t\t\t\t<div class="card-panel" id ="citation-text">
+        \t\t\t\t\t\t<p type="text" id="paper"""+ str(counter) + '">\n')
+        html_file.write("@" + entry['ID'] + "{" + entry['ID'] + ",\n")
+        for key in entry.keys():
+            if key != 'ID' and key != 'ENTRYTYPE':
+                html_file.write("\t" + key + " = {" + entry[key] + "},\n")
+        html_file.write("}\n")
+        html_file.write("""\t\t\t\t\t\t</p>
+        \t\t\t\t\t</div>
+        \t\t\t\t\t<div class="row">
+        \t\t\t\t\t\t<div class="col m11"></div>
+        \t\t\t\t\t\t<a class="button col m1" onclick="copyToClipboard('paper""" + str(counter) + """')"\n""")
+        html_file.write("""\t\t\t\t\t\t style="position: absolute; right: 0;"><i class="material-icons">copy_all</i></a>
+        \t\t\t\t\t</div>
+        \t\t\t</div>
+        \t\t</div>\n""")
+        counter+=1
+    html_file.write("""</div>\n""")
 
 
 
