@@ -6,6 +6,7 @@ import bibtexparser
 from bibtexparser.bwriter import BibTexWriter
 # Import unidecode module from unidecode
 from unidecode import unidecode
+import datetime
 
 month_ranks = {
     'jan': 1,
@@ -119,6 +120,53 @@ def generate_teaser(size, html_file, bibtex_database):
         </div>\n""")
             counter += 1
 
+def generate_pubs(html_file, bibtex_database):
+    #Get the current year
+    current_year = datetime.datetime.now().year
+    first_pub_year = int(bibtex_database.entries[-1]['year'])
+
+    html_file.write("""<div class="col s12 m12">
+        \t<h2>"""+ str(current_year) +"""</h2>
+        \t<hr>\n""")
+    #go over all the publications from bibtex_database
+    for entry in bibtex_database.entries:
+        #if the year of the publication is the same as the current year
+        if entry['year'] != str(current_year):
+            #decremenet the current year until it matches the year of the publication
+            while entry['year'] != str(current_year):
+                current_year -= 1
+                html_file.write("""
+                \t<h2>"""+ str(current_year) +"""</h2>
+                \t<hr>\n""")
+
+        html_file.write("""\t\t<div class="row">
+        \t\t\t<div class="col s12 m12">
+        \t\t\t\t<div class="card" style="background-color:#1c415b;">
+        \t\t\t\t\t<div class="card-content white-text">
+        \t\t\t\t\t\t<div class="row">
+        \t\t\t\t\t\t\t<div class="col s6 m6">
+        \t\t\t\t\t\t\t\t<!--Teaser Images here-->
+        \t\t\t\t\t\t\t</div>
+        \t\t\t\t\t\t</div>\n""")
+        html_file.write("""\t\t\t\t\t\t<span class="card-title">""" 
+        +process_title(entry['title'])+"""</span>
+        \t\t\t\t\t\t<p><i>"""+ entry['booktitle'] +"""</i></p>\n""")
+        html_file.write("""\t\t\t\t\t\t<p>Authors: """)
+        #go over all the authors and add them to the html file if author name is 'Alper Sahistan' make it bold
+        for author in entry['author'].split(' and '):
+                if author == 'Sahistan, Alper':
+                    html_file.write("<b>" + process_author_name(author) + "</b>")
+                else:
+                    html_file.write(unidecode(process_author_name(author)))
+                #don't write a comma after the last author
+                if author != entry['author'].split(' and ')[-1]:
+                    html_file.write(", ")
+                else:
+                    html_file.write("</p>\n")
+
+
+
+
 #open the bibtex file and read the lines
 with open(file_name) as bibtex_file:
     bibtex_database = bibtexparser.load(bibtex_file)
@@ -143,6 +191,6 @@ with open(file_name) as bibtex_file:
     
     if print_pubs:
         html_file.write("<!-- Full Pubs -->\n")
-        #generate_teaser(len(bibtex_database.entries), html_file, bibtex_database)
+        generate_pubs(html_file, bibtex_database)
     
 
